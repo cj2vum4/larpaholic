@@ -43,6 +43,13 @@ def handle_message(event):
         user_message = event.message.text
         user_id = event.source.user_id if hasattr(event.source, 'user_id') else 'Unknown'
         
+        # 詳細記錄收到的訊息
+        print(f"=== 收到訊息 ===")
+        print(f"用戶 ID: {user_id}")
+        print(f"訊息內容: {user_message}")
+        print(f"設定的 YOUR_USER_ID: {YOUR_USER_ID}")
+        print(f"==================")
+        
         # 建立轉發訊息
         forward_text = f"""🔔 OA 收到新訊息！
 
@@ -55,23 +62,28 @@ def handle_message(event):
         
         # 轉發訊息到你的個人 LINE
         if YOUR_USER_ID and YOUR_USER_ID != 'YOUR_USER_ID_HERE':
-            line_bot_api.push_message(
-                YOUR_USER_ID,
-                TextSendMessage(text=forward_text)
-            )
-            print(f"訊息已轉發給 {YOUR_USER_ID}")
+            try:
+                line_bot_api.push_message(
+                    YOUR_USER_ID,
+                    TextSendMessage(text=forward_text)
+                )
+                print(f"✅ 訊息已轉發給 {YOUR_USER_ID}")
+            except Exception as push_error:
+                print(f"❌ 轉發失敗: {push_error}")
         else:
-            print("警告：YOUR_USER_ID 尚未設定")
+            print("⚠️ 警告：YOUR_USER_ID 尚未正確設定")
             
-        # 可選：回覆原始用戶（如果不想回覆可以移除這段）
-        reply_text = "謝謝您的訊息，我們已經收到了！"
+        # 可選：回覆原始用戶
+        reply_text = f"謝謝您的訊息！[Debug: 你的ID是 {user_id}]"
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=reply_text)
         )
         
     except Exception as e:
-        print(f"處理訊息時發生錯誤: {e}")
+        print(f"❌ 處理訊息時發生錯誤: {e}")
+        import traceback
+        traceback.print_exc()
 
 # 處理其他類型的事件（加入好友、取消關注等）
 @handler.add(MessageEvent)
