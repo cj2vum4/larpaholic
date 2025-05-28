@@ -1,8 +1,8 @@
 # app.py - Email 通知版本
 import os
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
@@ -26,7 +26,7 @@ def send_email_notification(user_id, message_text, timestamp):
     """發送 Email 通知"""
     try:
         # 建立郵件內容
-        msg = MimeMultipart()
+        msg = MIMEMultipart()
         msg['From'] = EMAIL_USER
         msg['To'] = NOTIFY_EMAIL
         msg['Subject'] = f"🔔 LINE OA 收到新訊息！"
@@ -47,7 +47,7 @@ def send_email_notification(user_id, message_text, timestamp):
 來自 LINE OA 自動通知系統
 """
         
-        msg.attach(MimeText(body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
         # 發送郵件
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
