@@ -12,8 +12,11 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 # 從環境變數取得設定
-line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN'))
-handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
+CHANNEL_ACCESS_TOKEN = os.environ.get('CHANNEL_ACCESS_TOKEN', 'dummy_token')
+CHANNEL_SECRET = os.environ.get('CHANNEL_SECRET', 'dummy_secret')
+
+line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN) if CHANNEL_ACCESS_TOKEN != 'dummy_token' else None
+handler = WebhookHandler(CHANNEL_SECRET)
 
 # Email 設定（從環境變數取得）
 SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
@@ -112,11 +115,17 @@ def handle_message(event):
             print("⚠️ Email 設定不完整，無法發送通知")
             
         # 回覆用戶（可選）
-        reply_text = "謝謝您的訊息！管理員已收到通知。"
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply_text)
-        )
+        if line_bot_api:
+            try:
+                reply_text = "謝謝您的訊息！管理員已收到通知。"
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=reply_text)
+                )
+            except Exception as reply_error:
+                print(f"⚠️ 回覆訊息失敗: {reply_error}")
+        else:
+            print("⚠️ LINE Bot API 未設定，無法回覆訊息")
         
     except Exception as e:
         print(f"❌ 處理訊息時發生錯誤: {e}")
